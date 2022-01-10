@@ -13,5 +13,5 @@ def load_image(name, colorkey=None):
             image = image.convert_alpha()
         return image
     except:
-        print(f"Файл с изображением '{fullname}' не найден")
+        print(f"Файл с изображением '{name}' не найден")
         sys.exit()

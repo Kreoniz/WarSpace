@@ -4,7 +4,7 @@ import pygame
 
 from general_functions import load_image
 
-menu_height = 50
+menu_height = 100
 # classes
 
 class Tile(pygame.sprite.Sprite):
@@ -17,6 +17,13 @@ class Tile(pygame.sprite.Sprite):
 class TowerBaseTile(Tile):
     def __init__(self, tile_type, pos_x, pos_y):
         super().__init__(tile_type, pos_x, pos_y)
+
+class Info_bar:
+    def __init__(self, screen):
+        self.image = load_image('game_assets/info_bar/info_bar.png')
+        screen.blit(self.image, (0, 0))
+
+    # def
 
 
 # game initialization
@@ -43,9 +50,9 @@ def load_level(filename):
     return level_map
 
 # constants
-tile_images = {'road': load_image('Textures/stone.png'),
-               'grass': load_image('Textures/grass.png'),
-               'tower_base': load_image('Textures/tower_base.png')
+tile_images = {'road': load_image('game_assets/Textures/stone.png'),
+               'grass': load_image('game_assets/Textures/grass.png'),
+               'tower_base': load_image('game_assets/Textures/tower_base.png')
 }
 tile_width = tile_height = 50
 all_sprites = pygame.sprite.Group()
@@ -68,6 +75,7 @@ if __name__ == '__main__':
 
         screen.fill((0, 0, 0))
         all_sprites.draw(screen)
+        info_bar = Info_bar(screen)
 
         if pygame.mouse.get_focused():
             if any(pygame.mouse.get_pressed()):
