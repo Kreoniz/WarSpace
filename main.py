@@ -2,10 +2,12 @@ import sys
 import os
 import pygame
 
+# importing other stuff ------------------------------------------------------------------------------------------------
 from general_functions import load_image
 
 menu_height = 100
-# classes
+
+# classes --------------------------------------------------------------------------------------------------------------
 
 class Tile(pygame.sprite.Sprite):
     def __init__(self, tile_type, pos_x, pos_y):
@@ -23,14 +25,13 @@ class Info_bar:
         self.image = load_image('game_assets/info_bar/info_bar.png')
         screen.blit(self.image, (0, 0))
 
-    # def
 
 
-# game initialization
+# game initialization --------------------------------------------------------------------------------------------------
 pygame.init()
 screen = pygame.display.set_mode((1100, 700))
 
-# functions
+# functions ------------------------------------------------------------------------------------------------------------
 def generate_level(level):
     new_player, x, y = None, None, None
     for y in range(len(level)):
@@ -49,7 +50,7 @@ def load_level(filename):
     max_width = max(map(len, level_map))
     return level_map
 
-# constants
+# constants ------------------------------------------------------------------------------------------------------------
 tile_images = {'road': load_image('game_assets/Textures/stone.png'),
                'grass': load_image('game_assets/Textures/grass.png'),
                'tower_base': load_image('game_assets/Textures/tower_base.png')
@@ -62,11 +63,11 @@ cursor_select = load_image("game_assets/cursor/cursor_select.png")
 cursor = load_image("game_assets/cursor/cursor.png")
 
 
-# main cycle
+# main loop ------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
     running = True
     pygame.mouse.set_visible(False)
-    in_progress = generate_level(load_level('map.txt'))
+    generate_level(load_level('map.txt'))
 
     while running:
         for event in pygame.event.get():
