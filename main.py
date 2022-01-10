@@ -17,7 +17,7 @@ class Tile(pygame.sprite.Sprite):
             tile_width * pos_x, menu_height + tile_height * pos_y)
 
     def update(self):
-        pass
+        print("hello")
 
 class TowerBaseTile(Tile):
     def __init__(self, tile_type, pos_x, pos_y):
@@ -66,7 +66,7 @@ cursor_select = load_image("game_assets/cursor/cursor_select.png")
 cursor = load_image("game_assets/cursor/cursor.png")
 
 
-# main loop -------------------------------------------------------------------------------------------------------------
+# main loop ------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
     running = True
     pygame.mouse.set_visible(False)
