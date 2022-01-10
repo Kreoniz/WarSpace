@@ -6,6 +6,7 @@ from general_functions import load_image
 
 menu_height = 50
 # classes
+
 class Tile(pygame.sprite.Sprite):
     def __init__(self, tile_type, pos_x, pos_y):
         super().__init__(tiles_group, all_sprites)
@@ -20,7 +21,7 @@ class TowerBaseTile(Tile):
 
 # game initialization
 pygame.init()
-screen = pygame.display.set_mode()
+screen = pygame.display.set_mode((1100, 700))
 
 # functions
 def generate_level(level):
@@ -50,14 +51,29 @@ tile_width = tile_height = 50
 all_sprites = pygame.sprite.Group()
 tiles_group = pygame.sprite.Group()
 
+cursor_select = load_image("game_assets/cursor/cursor_select.png")
+cursor = load_image("game_assets/cursor/cursor.png")
+
+
 # main cycle
 if __name__ == '__main__':
     running = True
+    pygame.mouse.set_visible(False)
     in_progress = generate_level(load_level('map.txt'))
-    all_sprites.draw(screen)
+
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+
+        screen.fill((0, 0, 0))
+        all_sprites.draw(screen)
+
+        if pygame.mouse.get_focused():
+            if any(pygame.mouse.get_pressed()):
+                screen.blit(cursor_select, pygame.mouse.get_pos())
+            else:
+                screen.blit(cursor, pygame.mouse.get_pos())
+
         pygame.display.flip()
     pygame.quit()
