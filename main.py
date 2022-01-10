@@ -66,7 +66,7 @@ cursor_select = load_image("game_assets/cursor/cursor_select.png")
 cursor = load_image("game_assets/cursor/cursor.png")
 
 
-# main loop ------------------------------------------------------------------------------------------------------------
+# main loop -------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
     running = True
     pygame.mouse.set_visible(False)
