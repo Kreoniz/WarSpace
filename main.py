@@ -4,18 +4,23 @@ import pygame
 
 from general_functions import load_image
 
+menu_height = 50
 # classes
 class Tile(pygame.sprite.Sprite):
     def __init__(self, tile_type, pos_x, pos_y):
         super().__init__(tiles_group, all_sprites)
         self.image = tile_images[tile_type]
         self.rect = self.image.get_rect().move(
-            tile_width * pos_x, tile_height * pos_y)
+            tile_width * pos_x, menu_height + tile_height * pos_y)
+
+class TowerBaseTile(Tile):
+    def __init__(self, tile_type, pos_x, pos_y):
+        super().__init__(tile_type, pos_x, pos_y)
+
 
 # game initialization
 pygame.init()
-size = width, height = 500, 450
-screen = pygame.display.set_mode(size)
+screen = pygame.display.set_mode()
 
 # functions
 def generate_level(level):
@@ -26,17 +31,21 @@ def generate_level(level):
                 Tile('grass', x, y)
             elif level[y][x] == '2':
                 Tile('road', x, y)
+            elif level[y][x] == '3':
+                TowerBaseTile('tower_base', x, y)
     return None
 
 def load_level(filename):
     with open(filename, 'r') as mapFile:
-        level_map = [line.strip() for line in mapFile]
+        level_map = ["".join(line.split()) for line in mapFile]
     max_width = max(map(len, level_map))
     return level_map
 
 # constants
 tile_images = {'road': load_image('Textures/stone.png'),
-               'grass': load_image('Textures/grass.png')}
+               'grass': load_image('Textures/grass.png'),
+               'tower_base': load_image('Textures/tower_base.png')
+}
 tile_width = tile_height = 50
 all_sprites = pygame.sprite.Group()
 tiles_group = pygame.sprite.Group()
