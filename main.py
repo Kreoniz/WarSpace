@@ -32,7 +32,7 @@ class TowerBaseTile(Tile):
 
 # game initialization --------------------------------------------------------------------------------------------------
 pygame.init()
-screen = pygame.display.set_mode((1100, 700))
+screen = pygame.display.set_mode((1000, 600))
 
 # functions ------------------------------------------------------------------------------------------------------------
 def generate_level(level):
