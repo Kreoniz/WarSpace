@@ -23,10 +23,10 @@ class TowerBaseTile(Tile):
     def __init__(self, tile_type, pos_x, pos_y):
         super().__init__(tile_type, pos_x, pos_y)
 
-class Info_bar:
-    def __init__(self, screen):
-        self.image = load_image('game_assets/info_bar/info_bar.png')
-        screen.blit(self.image, (0, 0))
+# class Info_bar:
+#     def __init__(self, screen):
+#         self.image = load_image('game_assets/info_bar/info_bar.png')
+#         screen.blit(self.image, (0, 0))
 
 
 
@@ -79,7 +79,7 @@ if __name__ == '__main__':
 
         screen.fill((0, 0, 0))
         all_sprites.draw(screen)
-        info_bar = Info_bar(screen)
+        # info_bar = Info_bar(screen)
 
         if pygame.mouse.get_focused():
             if any(pygame.mouse.get_pressed()):
