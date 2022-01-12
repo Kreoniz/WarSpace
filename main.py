@@ -16,12 +16,27 @@ class Tile(pygame.sprite.Sprite):
         self.rect = self.image.get_rect().move(
             tile_width * pos_x, menu_height + tile_height * pos_y)
 
-    def update(self):
-        print("hello")
 
 class TowerBaseTile(Tile):
     def __init__(self, tile_type, pos_x, pos_y):
         super().__init__(tile_type, pos_x, pos_y)
+        self.checkActive = True
+
+    def update(self, *args):
+        if self.checkActive and args and args[0].type == pygame.MOUSEBUTTONDOWN and self.rect.collidepoint(args[0].pos):
+            TowerSelectionSlider(self.rect.x, self.rect.y)
+            self.checkActive = False
+        else:
+            self.hide()
+
+
+
+class TowerSelectionSlider(pygame.sprite.Sprite):
+    def __init__(self, pos_x, pos_y):
+        super().__init__(all_sprites)
+        self.image = load_image('TEMP/img/SelectionSlider.png')
+        self.rect = self.image.get_rect()
+        self.rect.x, self.rect.y = pos_x - 33, pos_y - 37
 
 # class Info_bar:
 #     def __init__(self, screen):
@@ -76,16 +91,14 @@ if __name__ == '__main__':
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-
+            tiles_group.update(event)
         screen.fill((0, 0, 0))
         all_sprites.draw(screen)
         # info_bar = Info_bar(screen)
-
         if pygame.mouse.get_focused():
             if any(pygame.mouse.get_pressed()):
                 screen.blit(cursor_select, pygame.mouse.get_pos())
             else:
                 screen.blit(cursor, pygame.mouse.get_pos())
-
         pygame.display.flip()
     pygame.quit()
