@@ -27,8 +27,7 @@ class TowerBaseTile(Tile):
             TowerSelectionSlider(self.rect.x, self.rect.y)
             self.checkActive = False
         else:
-            self.hide()
-
+            pass
 
 
 class TowerSelectionSlider(pygame.sprite.Sprite):
