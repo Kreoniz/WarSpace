@@ -16,52 +16,40 @@ class Tile(pygame.sprite.Sprite):
         self.rect = self.image.get_rect().move(
             tile_width * pos_x, menu_height + tile_height * pos_y)
 
-class TowerBaseTile(pygame.sprite.Sprite):
-    def __init__(self, tile_type, pos_x, pos_y):
-        super().__init__(tower_base_tiles_group, all_sprites)
-        self.image = tile_images[tile_type]
-        self.rect = self.image.get_rect().move(
-            tile_width * pos_x, tile_height * pos_y)
-        self.checkPressed = False
-
-    def update(self, *args):
-        if args and self.rect.collidepoint(args[0].pos):
-            coords = [[self.rect.x + 60, self.rect.y],
-                      [self.rect.x - 60, self.rect.y],
-                      [self.rect.x, self.rect.y + 60],
-                      [self.rect.x, self.rect.y - 60]]
-            for num, item in enumerate(items_group):
-                item.show(coords[num][0], coords[num][1])
-            self.checkPressed = True
-        elif self.checkPressed:
-            self.checkPressed = False
-            for item in items_group:
-                item.hide()
-
-
-class Item(pygame.sprite.Sprite):
-    def __init__(self, image):
-        super().__init__(items_group, all_sprites)
-        self.image = image
-        self.rect = self.image.get_rect().move(-60, -60)
+    def get_pos(self, pos):
+        return tile_width * pos[0], tile_height * pos[1]
 
     def update(self):
         pass
 
-    def show(self, pos_x, pos_y):
-        self.rect = self.image.get_rect().move(pos_x, pos_y)
-
-    def hide(self):
-        self.rect = self.image.get_rect().move(-60, -60)
-
-
+class TowerBaseTile(Tile):
+    def __init__(self, tile_type, pos_x, pos_y):
+        super().__init__(tile_type, pos_x, pos_y)
 
 # class Info_bar:
 #     def __init__(self, screen):
 #         self.image = load_image('game_assets/info_bar/info_bar.png')
 #         screen.blit(self.image, (0, 0))
 
+class Tower(pygame.sprite.Sprite):
+    def __init__(self, sheet, columns, rows, x, y):
+        super().__init__(all_sprites, tower_group)
+        self.frames = []
+        self.cut_sheet(sheet, columns, rows)
+        self.cur_frame = 0
+        self.image = self.frames[self.cur_frame]
+        self.rect = self.rect.move(x, y)
 
+    def cut_sheet(self, sheet, columns, rows):
+        self.rect = pygame.Rect(0, 0, sheet.get_width() // columns, sheet.get_height() // rows)
+        for j in range(rows):
+            for i in range(columns):
+                frame_location = (self.rect.w * i, self.rect.h * j)
+                self.frames.append(sheet.subsurface(pygame.Rect(frame_location, self.rect.size)))
+
+    def update(self):
+        self.cur_frame = (self.cur_frame + 1) % len(self.frames)
+        self.image = self.frames[self.cur_frame]
 
 # game initialization --------------------------------------------------------------------------------------------------
 pygame.init()
@@ -78,7 +66,6 @@ def generate_level(level):
                 Tile('road', x, y)
             elif level[y][x] == '3':
                 TowerBaseTile('tower_base', x, y)
-    [Item(item) for item in item_images]
     return None
 
 def load_level(filename):
@@ -92,16 +79,10 @@ tile_images = {'road': load_image('game_assets/Textures/stone.png'),
                'grass': load_image('game_assets/Textures/grass.png'),
                'tower_base': load_image('game_assets/Textures/tower_base.png')
 }
-item_images = [load_image('game_assets/items/test.png'),
-               load_image('game_assets/items/test.png'),
-               load_image('game_assets/items/test.png'),
-               load_image('game_assets/items/test.png')
-]
 tile_width = tile_height = 50
 all_sprites = pygame.sprite.Group()
 tiles_group = pygame.sprite.Group()
-tower_base_tiles_group = pygame.sprite.Group()
-items_group = pygame.sprite.Group()
+tower_group = pygame.sprite.Group()
 
 cursor_select = load_image("game_assets/cursor/cursor_select.png")
 cursor = load_image("game_assets/cursor/cursor.png")
@@ -112,20 +93,26 @@ if __name__ == '__main__':
     running = True
     pygame.mouse.set_visible(False)
     generate_level(load_level('map.txt'))
+    clock = pygame.time.Clock()
+    base = Tower(load_image("game_assets/Towers/blue_turret.png"), 4, 9, 50, 50)
+
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                # check click for TowerBaseTile
-                tower_base_tiles_group.update(event)
+
         screen.fill((0, 0, 0))
         all_sprites.draw(screen)
+        tower_group.update()
+
         # info_bar = Info_bar(screen)
+
         if pygame.mouse.get_focused():
             if any(pygame.mouse.get_pressed()):
                 screen.blit(cursor_select, pygame.mouse.get_pos())
             else:
                 screen.blit(cursor, pygame.mouse.get_pos())
+
         pygame.display.flip()
+        clock.tick(60)
     pygame.quit()
