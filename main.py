@@ -54,8 +54,22 @@ class Tower(pygame.sprite.Sprite):
 # game initialization --------------------------------------------------------------------------------------------------
 pygame.init()
 screen = pygame.display.set_mode((1000, 600))
+size = screen.get_size()
 
 # functions ------------------------------------------------------------------------------------------------------------
+def render(screen, font, text, color, pos):
+    text_surface = font.render(text, 0, pygame.Color(color))
+    screen.blit(text_surface, pos)
+
+def create_fonts(font_sizes_list):
+    # Creates different fonts with one list
+    fonts = []
+    for size in font_sizes_list:
+        fonts.append(
+            pygame.font.SysFont("Arial", size))
+    return fonts
+
+
 def generate_level(level):
     new_player, x, y = None, None, None
     for y in range(len(level)):
@@ -86,6 +100,8 @@ tower_group = pygame.sprite.Group()
 
 cursor_select = load_image("game_assets/cursor/cursor_select.png")
 cursor = load_image("game_assets/cursor/cursor.png")
+font_sizes_list = [40, 30, 20, 10]
+fonts = create_fonts(font_sizes_list)
 
 
 # main loop ------------------------------------------------------------------------------------------------------------
@@ -113,6 +129,10 @@ if __name__ == '__main__':
             else:
                 screen.blit(cursor, pygame.mouse.get_pos())
 
+        current_fps = str(int(clock.get_fps()))
+        render(screen, fonts[0], text=current_fps, color=(255, 255, 255), pos=(size[0] - font_sizes_list[0], 0))
+
         pygame.display.flip()
         clock.tick(60)
+        # print(clock.get_fps())
     pygame.quit()
