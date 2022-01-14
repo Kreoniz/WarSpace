@@ -47,6 +47,7 @@ class Tower(pygame.sprite.Sprite):
         super().__init__(all_sprites, tower_group)
         self.frames = []
         self.flipped_frames = []
+        self.repeat = repeat
         self.cut_sheet(sheet, columns, rows)
         self.cur_frame = 0
         self.image = self.frames[self.cur_frame]
@@ -58,12 +59,13 @@ class Tower(pygame.sprite.Sprite):
             for i in range(columns):
                 frame_location = (self.rect.w * i, self.rect.h * j)
                 self.frames.append(sheet.subsurface(pygame.Rect(frame_location, self.rect.size)))
-        for j in range(rows):
-            for i in range(columns):
-                frame_location = (self.rect.w * i, self.rect.h * j)
-                self.flipped_frames.append(pygame.transform.flip(sheet.subsurface(pygame.Rect(frame_location, self.rect.size)), True, False))
-        for i in range(len(self.flipped_frames) - 2, 0, -1):
-            self.frames.append(self.flipped_frames[i])
+        if self.repeat:
+            for j in range(rows):
+                for i in range(columns):
+                    frame_location = (self.rect.w * i, self.rect.h * j)
+                    self.flipped_frames.append(pygame.transform.flip(sheet.subsurface(pygame.Rect(frame_location, self.rect.size)), True, False))
+            for i in range(len(self.flipped_frames) - 2, 0, -1):
+                self.frames.append(self.flipped_frames[i])
         del self.flipped_frames
 
     def update(self):
@@ -124,7 +126,7 @@ if __name__ == '__main__':
     generate_level(load_level('map.txt'))
     clock = pygame.time.Clock()
     pos = get_pos((8, 4))
-    blue_turret = Tower(load_image("game_assets/Towers/blue_turret_file.png"), 1, 9, pos[0] - 7, pos[1] - 10, True)
+    blue_turret = Tower(load_image("game_assets/Towers/blue_turret_file.png"), 1, 9, pos[0] - 7, pos[1] - 10, repeat=True)
 
 
     while running:
