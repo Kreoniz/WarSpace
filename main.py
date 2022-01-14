@@ -1,11 +1,17 @@
 import sys
 import os
 import pygame
+import math
+import random as rd
+from pprint import pprint
+
 
 # importing other stuff ------------------------------------------------------------------------------------------------
-from general_functions import load_image
+from general_functions import load_image, create_fonts
 
 menu_height = 0
+vacant_bases = {}
+occupied_bases = {(3, 2): 1}
 
 # classes --------------------------------------------------------------------------------------------------------------
 
@@ -16,15 +22,20 @@ class Tile(pygame.sprite.Sprite):
         self.rect = self.image.get_rect().move(
             tile_width * pos_x, menu_height + tile_height * pos_y)
 
-    def get_pos(self, pos):
-        return tile_width * pos[0], tile_height * pos[1]
-
-    def update(self):
-        pass
 
 class TowerBaseTile(Tile):
     def __init__(self, tile_type, pos_x, pos_y):
         super().__init__(tile_type, pos_x, pos_y)
+        self.pos = pos_x, pos_y
+
+    def tower_options(self):
+        if self.pos in occupied_bases:
+            print("yes")
+        else:
+            print("not")
+
+    def update(self):
+        self.tower_options()
 
 # class Info_bar:
 #     def __init__(self, screen):
@@ -32,9 +43,10 @@ class TowerBaseTile(Tile):
 #         screen.blit(self.image, (0, 0))
 
 class Tower(pygame.sprite.Sprite):
-    def __init__(self, sheet, columns, rows, x, y):
+    def __init__(self, sheet, columns, rows, x, y, repeat=False):
         super().__init__(all_sprites, tower_group)
         self.frames = []
+        self.flipped_frames = []
         self.cut_sheet(sheet, columns, rows)
         self.cur_frame = 0
         self.image = self.frames[self.cur_frame]
@@ -46,6 +58,13 @@ class Tower(pygame.sprite.Sprite):
             for i in range(columns):
                 frame_location = (self.rect.w * i, self.rect.h * j)
                 self.frames.append(sheet.subsurface(pygame.Rect(frame_location, self.rect.size)))
+        for j in range(rows):
+            for i in range(columns):
+                frame_location = (self.rect.w * i, self.rect.h * j)
+                self.flipped_frames.append(pygame.transform.flip(sheet.subsurface(pygame.Rect(frame_location, self.rect.size)), True, False))
+        for i in range(len(self.flipped_frames) - 2, 0, -1):
+            self.frames.append(self.flipped_frames[i])
+        del self.flipped_frames
 
     def update(self):
         self.cur_frame = (self.cur_frame + 1) % len(self.frames)
@@ -61,14 +80,8 @@ def render(screen, font, text, color, pos):
     text_surface = font.render(text, 0, pygame.Color(color))
     screen.blit(text_surface, pos)
 
-def create_fonts(font_sizes_list):
-    # Creates different fonts with one list
-    fonts = []
-    for size in font_sizes_list:
-        fonts.append(
-            pygame.font.SysFont("Arial", size))
-    return fonts
-
+def get_pos(pos):
+    return tile_width * pos[0], tile_height * pos[1]
 
 def generate_level(level):
     new_player, x, y = None, None, None
@@ -79,13 +92,13 @@ def generate_level(level):
             elif level[y][x] == '2':
                 Tile('road', x, y)
             elif level[y][x] == '3':
-                TowerBaseTile('tower_base', x, y)
+                vacant_bases[(x, y)] = (TowerBaseTile('tower_base', x, y))
     return None
 
 def load_level(filename):
     with open(filename, 'r') as mapFile:
         level_map = ["".join(line.split()) for line in mapFile]
-    max_width = max(map(len, level_map))
+    # max_width = max(map(len, level_map))
     return level_map
 
 # constants ------------------------------------------------------------------------------------------------------------
@@ -110,7 +123,9 @@ if __name__ == '__main__':
     pygame.mouse.set_visible(False)
     generate_level(load_level('map.txt'))
     clock = pygame.time.Clock()
-    base = Tower(load_image("game_assets/Towers/blue_turret.png"), 4, 9, 50, 50)
+    pos = get_pos((8, 4))
+    blue_turret = Tower(load_image("game_assets/Towers/blue_turret_file.png"), 1, 9, pos[0] - 7, pos[1] - 10, True)
+
 
     while running:
         for event in pygame.event.get():
@@ -121,6 +136,7 @@ if __name__ == '__main__':
         all_sprites.draw(screen)
         tower_group.update()
 
+
         # info_bar = Info_bar(screen)
 
         if pygame.mouse.get_focused():
@@ -130,9 +146,12 @@ if __name__ == '__main__':
                 screen.blit(cursor, pygame.mouse.get_pos())
 
         current_fps = str(int(clock.get_fps()))
-        render(screen, fonts[0], text=current_fps, color=(255, 255, 255), pos=(size[0] - font_sizes_list[0], 0))
+        render(screen, fonts[0], text=current_fps, color=(255, 255, 255), pos=(0, 0))
 
         pygame.display.flip()
-        clock.tick(60)
+        clock.tick(20)
         # print(clock.get_fps())
+
+
+
     pygame.quit()
