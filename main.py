@@ -16,26 +16,45 @@ class Tile(pygame.sprite.Sprite):
         self.rect = self.image.get_rect().move(
             tile_width * pos_x, menu_height + tile_height * pos_y)
 
-
-class TowerBaseTile(Tile):
+class TowerBaseTile(pygame.sprite.Sprite):
     def __init__(self, tile_type, pos_x, pos_y):
-        super().__init__(tile_type, pos_x, pos_y)
-        self.checkActive = True
+        super().__init__(tower_base_tiles_group, all_sprites)
+        self.image = tile_images[tile_type]
+        self.rect = self.image.get_rect().move(
+            tile_width * pos_x, tile_height * pos_y)
+        self.checkPressed = False
 
     def update(self, *args):
-        if self.checkActive and args and args[0].type == pygame.MOUSEBUTTONDOWN and self.rect.collidepoint(args[0].pos):
-            TowerSelectionSlider(self.rect.x, self.rect.y)
-            self.checkActive = False
-        else:
-            pass
+        if args and self.rect.collidepoint(args[0].pos):
+            coords = [[self.rect.x + 60, self.rect.y],
+                      [self.rect.x - 60, self.rect.y],
+                      [self.rect.x, self.rect.y + 60],
+                      [self.rect.x, self.rect.y - 60]]
+            for num, item in enumerate(items_group):
+                item.show(coords[num][0], coords[num][1])
+            self.checkPressed = True
+        elif self.checkPressed:
+            self.checkPressed = False
+            for item in items_group:
+                item.hide()
 
 
-class TowerSelectionSlider(pygame.sprite.Sprite):
-    def __init__(self, pos_x, pos_y):
-        super().__init__(all_sprites)
-        self.image = load_image('TEMP/img/SelectionSlider.png')
-        self.rect = self.image.get_rect()
-        self.rect.x, self.rect.y = pos_x - 33, pos_y - 37
+class Item(pygame.sprite.Sprite):
+    def __init__(self, image):
+        super().__init__(items_group, all_sprites)
+        self.image = image
+        self.rect = self.image.get_rect().move(-60, -60)
+
+    def update(self):
+        pass
+
+    def show(self, pos_x, pos_y):
+        self.rect = self.image.get_rect().move(pos_x, pos_y)
+
+    def hide(self):
+        self.rect = self.image.get_rect().move(-60, -60)
+
+
 
 # class Info_bar:
 #     def __init__(self, screen):
@@ -59,6 +78,7 @@ def generate_level(level):
                 Tile('road', x, y)
             elif level[y][x] == '3':
                 TowerBaseTile('tower_base', x, y)
+    [Item(item) for item in item_images]
     return None
 
 def load_level(filename):
@@ -72,9 +92,16 @@ tile_images = {'road': load_image('game_assets/Textures/stone.png'),
                'grass': load_image('game_assets/Textures/grass.png'),
                'tower_base': load_image('game_assets/Textures/tower_base.png')
 }
+item_images = [load_image('game_assets/items/test.png'),
+               load_image('game_assets/items/test.png'),
+               load_image('game_assets/items/test.png'),
+               load_image('game_assets/items/test.png')
+]
 tile_width = tile_height = 50
 all_sprites = pygame.sprite.Group()
 tiles_group = pygame.sprite.Group()
+tower_base_tiles_group = pygame.sprite.Group()
+items_group = pygame.sprite.Group()
 
 cursor_select = load_image("game_assets/cursor/cursor_select.png")
 cursor = load_image("game_assets/cursor/cursor.png")
@@ -85,12 +112,13 @@ if __name__ == '__main__':
     running = True
     pygame.mouse.set_visible(False)
     generate_level(load_level('map.txt'))
-
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            tiles_group.update(event)
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                # check click for TowerBaseTile
+                tower_base_tiles_group.update(event)
         screen.fill((0, 0, 0))
         all_sprites.draw(screen)
         # info_bar = Info_bar(screen)
