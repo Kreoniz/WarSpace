@@ -11,7 +11,8 @@ from general_functions import load_image, create_fonts
 
 menu_height = 0
 vacant_bases = {}
-occupied_bases = {(3, 2): 1}
+occupied_bases = {}
+turrets = []
 
 # classes --------------------------------------------------------------------------------------------------------------
 
@@ -29,13 +30,20 @@ class TowerBaseTile(Tile):
         self.pos = pos_x, pos_y
 
     def tower_options(self):
-        if self.pos in occupied_bases:
-            print("yes")
-        else:
-            print("not")
+        pass
 
-    def update(self):
-        self.tower_options()
+    def tower_build_select(self):
+        pos = get_pos(self.pos)
+        turrets.append(Tower(load_image("game_assets/Towers/blue_turret_file.png"), 1, 9, pos[0] - 7, pos[1] - 10, repeat=True))
+        occupied_bases[pos] = turrets[-1]
+        vacant_bases.pop(self.pos)
+
+    def update(self, *args):
+        if pygame.mouse.get_pressed()[0] and self.rect.collidepoint(args[0].pos):
+            if self.pos in occupied_bases:
+                self.tower_options()
+            elif self.pos in vacant_bases:
+                self.tower_build_select()
 
 # class Info_bar:
 #     def __init__(self, screen):
@@ -125,14 +133,19 @@ if __name__ == '__main__':
     pygame.mouse.set_visible(False)
     generate_level(load_level('map.txt'))
     clock = pygame.time.Clock()
-    pos = get_pos((8, 4))
-    blue_turret = Tower(load_image("game_assets/Towers/blue_turret_file.png"), 1, 9, pos[0] - 7, pos[1] - 10, repeat=True)
+    # pos = get_pos((8, 4))
+    # blue_turret = Tower(load_image("game_assets/Towers/blue_turret_file.png"), 1, 9, pos[0] - 7, pos[1] - 10, repeat=True)
 
 
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                pass
+                # print(occupied_bases)
+                # print(vacant_bases)
+            tiles_group.update(event)
 
         screen.fill((0, 0, 0))
         all_sprites.draw(screen)
