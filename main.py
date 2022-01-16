@@ -5,14 +5,13 @@ import math
 import random as rd
 from pprint import pprint
 
-
 # importing other stuff ------------------------------------------------------------------------------------------------
 from general_functions import load_image, create_fonts
 
 menu_height = 0
 vacant_bases = {}
-occupied_bases = {}
 turrets = []
+
 
 # classes --------------------------------------------------------------------------------------------------------------
 
@@ -28,22 +27,51 @@ class TowerBaseTile(Tile):
     def __init__(self, tile_type, pos_x, pos_y):
         super().__init__(tile_type, pos_x, pos_y)
         self.pos = pos_x, pos_y
+        self.checkPressed = False
 
-    def tower_options(self):
+
+    def tower_options_select(self):
         pass
 
-    def tower_build_select(self):
-        pos = get_pos(self.pos)
-        turrets.append(Tower(load_image("game_assets/Towers/blue_turret_file.png"), 1, 9, pos[0] - 7, pos[1] - 10, repeat=True))
-        occupied_bases[pos] = turrets[-1]
-        vacant_bases.pop(self.pos)
+    def tower_build_select(self, *args):
+        if self.rect.collidepoint(pygame.mouse.get_pos()):
+            pos = get_pos(self.pos)
+            coords = [[pos[0] + 60, pos[1]],
+                      [pos[0] - 60, pos[1]],
+                      [pos[0], pos[1] + 60],
+                      [pos[0], pos[1] - 60]]
+            for num, item in enumerate(items_group):
+                item.show(coords[num][0], coords[num][1])
+            self.checkPressed = True
+        elif self.checkPressed:
+            self.checkPressed = False
+            for item in items_group:
+                item.hide()
+
 
     def update(self, *args):
-        if pygame.mouse.get_pressed()[0] and self.rect.collidepoint(args[0].pos):
-            if self.pos in occupied_bases:
-                self.tower_options()
-            elif self.pos in vacant_bases:
-                self.tower_build_select()
+        if pygame.mouse.get_pressed()[0]:
+            if self.pos in vacant_bases:
+                self.tower_build_select(args)
+            elif self.pos not in vacant_bases:
+                self.tower_options_select()
+
+
+class Item(pygame.sprite.Sprite):
+    def __init__(self, image):
+        super().__init__(items_group, all_sprites)
+        self.image = image
+        self.rect = self.image.get_rect().move(-60, -60)
+
+    def update(self):
+        pass
+
+    def show(self, pos_x, pos_y):
+        self.rect = self.image.get_rect().move(pos_x, pos_y)
+
+    def hide(self):
+        self.rect = self.image.get_rect().move(-60, -60)
+
 
 # class Info_bar:
 #     def __init__(self, screen):
@@ -71,7 +99,9 @@ class Tower(pygame.sprite.Sprite):
             for j in range(rows):
                 for i in range(columns):
                     frame_location = (self.rect.w * i, self.rect.h * j)
-                    self.flipped_frames.append(pygame.transform.flip(sheet.subsurface(pygame.Rect(frame_location, self.rect.size)), True, False))
+                    self.flipped_frames.append(
+                        pygame.transform.flip(sheet.subsurface(pygame.Rect(frame_location, self.rect.size)), True,
+                                              False))
             for i in range(len(self.flipped_frames) - 2, 0, -1):
                 self.frames.append(self.flipped_frames[i])
         del self.flipped_frames
@@ -80,18 +110,22 @@ class Tower(pygame.sprite.Sprite):
         self.cur_frame = (self.cur_frame + 1) % len(self.frames)
         self.image = self.frames[self.cur_frame]
 
+
 # game initialization --------------------------------------------------------------------------------------------------
 pygame.init()
 screen = pygame.display.set_mode((1000, 600))
 size = screen.get_size()
+
 
 # functions ------------------------------------------------------------------------------------------------------------
 def render(screen, font, text, color, pos):
     text_surface = font.render(text, 0, pygame.Color(color))
     screen.blit(text_surface, pos)
 
+
 def get_pos(pos):
     return tile_width * pos[0], tile_height * pos[1]
+
 
 def generate_level(level):
     new_player, x, y = None, None, None
@@ -103,7 +137,9 @@ def generate_level(level):
                 Tile('road', x, y)
             elif level[y][x] == '3':
                 vacant_bases[(x, y)] = (TowerBaseTile('tower_base', x, y))
+    [Item(tower_selection_images[item]) for item in tower_selection_images]
     return None
+
 
 def load_level(filename):
     with open(filename, 'r') as mapFile:
@@ -111,20 +147,30 @@ def load_level(filename):
     # max_width = max(map(len, level_map))
     return level_map
 
-# constants ------------------------------------------------------------------------------------------------------------
+
+# files + other stuff --------------------------------------------------------------------------------------------------
 tile_images = {'road': load_image('game_assets/Textures/stone.png'),
                'grass': load_image('game_assets/Textures/grass.png'),
                'tower_base': load_image('game_assets/Textures/tower_base.png')
-}
-tile_width = tile_height = 50
-all_sprites = pygame.sprite.Group()
-tiles_group = pygame.sprite.Group()
-tower_group = pygame.sprite.Group()
+               }
+tower_selection_images = {0: load_image('game_assets/Towers/blue_turret.png'),
+                          1: load_image('game_assets/items/test.png'),
+                          2: load_image('game_assets/items/test.png'),
+                          3: load_image('game_assets/items/test.png')
+                          }
 
 cursor_select = load_image("game_assets/cursor/cursor_select.png")
 cursor = load_image("game_assets/cursor/cursor.png")
+
 font_sizes_list = [40, 30, 20, 10]
 fonts = create_fonts(font_sizes_list)
+
+tile_width = tile_height = 50
+# all sprite groups ----------------------------------------------------------------------------------------------------
+all_sprites = pygame.sprite.Group()
+tiles_group = pygame.sprite.Group()
+tower_group = pygame.sprite.Group()
+items_group = pygame.sprite.Group()
 
 
 # main loop ------------------------------------------------------------------------------------------------------------
@@ -135,7 +181,6 @@ if __name__ == '__main__':
     clock = pygame.time.Clock()
     # pos = get_pos((8, 4))
     # blue_turret = Tower(load_image("game_assets/Towers/blue_turret_file.png"), 1, 9, pos[0] - 7, pos[1] - 10, repeat=True)
-
 
     while running:
         for event in pygame.event.get():
@@ -153,7 +198,6 @@ if __name__ == '__main__':
 
 
         # info_bar = Info_bar(screen)
-
         if pygame.mouse.get_focused():
             if any(pygame.mouse.get_pressed()):
                 screen.blit(cursor_select, pygame.mouse.get_pos())
@@ -166,7 +210,5 @@ if __name__ == '__main__':
         pygame.display.flip()
         clock.tick(20)
         # print(clock.get_fps())
-
-
 
     pygame.quit()
