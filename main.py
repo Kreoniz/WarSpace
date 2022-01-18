@@ -27,26 +27,27 @@ class TowerBaseTile(Tile):
     def __init__(self, tile_type, pos_x, pos_y):
         super().__init__(tile_type, pos_x, pos_y)
         self.pos = pos_x, pos_y
-        self.checkPressed = False
+        print(self.pos)
+        self.tower_selection_open = False
 
 
     def tower_options_select(self):
         pass
 
     def tower_build_select(self, *args):
-        if self.rect.collidepoint(pygame.mouse.get_pos()):
+        if self.rect.collidepoint(pygame.mouse.get_pos()) and not self.tower_selection_open:
             pos = get_pos(self.pos)
             coords = [[pos[0] + 60, pos[1]],
                       [pos[0] - 60, pos[1]],
                       [pos[0], pos[1] + 60],
-                      [pos[0], pos[1] - 60]]
+                      [pos[0], pos[1] - 60],
+                      # [pos[0] - 100, pos[1] - 100]
+                     ]
             for num, item in enumerate(items_group):
                 item.show(coords[num][0], coords[num][1])
-            self.checkPressed = True
-        elif self.checkPressed:
-            self.checkPressed = False
-            for item in items_group:
-                item.hide()
+            self.tower_selection_open = True
+        elif not self.rect.collidepoint((pygame.mouse.get_pos())) and self.tower_selection_open:
+            self.tower_selection_open = False
 
 
     def update(self, *args):
@@ -61,16 +62,19 @@ class Item(pygame.sprite.Sprite):
     def __init__(self, image):
         super().__init__(items_group, all_sprites)
         self.image = image
-        self.rect = self.image.get_rect().move(-60, -60)
+        self.rect = self.image.get_rect().move(-160, -160)
 
     def update(self):
-        pass
+        if pygame.mouse.get_pressed()[0] and self.rect.collidepoint(pygame.mouse.get_pos()):
+            pos = self.rect.x, self.rect.y
+            print(pos)
+            turrets.append(Tower(load_image("game_assets/Towers/blue_turret_file.png"), 1, 9, pos[0] - 7, pos[1] - 10, repeat=True))
 
     def show(self, pos_x, pos_y):
         self.rect = self.image.get_rect().move(pos_x, pos_y)
 
     def hide(self):
-        self.rect = self.image.get_rect().move(-60, -60)
+        self.rect = self.image.get_rect().move(-160, -160)
 
 
 # class Info_bar:
@@ -153,10 +157,11 @@ tile_images = {'road': load_image('game_assets/Textures/stone.png'),
                'grass': load_image('game_assets/Textures/grass.png'),
                'tower_base': load_image('game_assets/Textures/tower_base.png')
                }
-tower_selection_images = {0: load_image('game_assets/Towers/blue_turret.png'),
+tower_selection_images = {0: load_image('game_assets/Towers/blue_turret_select.png'),
                           1: load_image('game_assets/items/test.png'),
                           2: load_image('game_assets/items/test.png'),
-                          3: load_image('game_assets/items/test.png')
+                          3: load_image('game_assets/items/test.png'),
+                          # 4: load_image('game_assets/items/semitransparent_circle.png')
                           }
 
 cursor_select = load_image("game_assets/cursor/cursor_select.png")
@@ -195,6 +200,8 @@ if __name__ == '__main__':
         screen.fill((0, 0, 0))
         all_sprites.draw(screen)
         tower_group.update()
+        items_group.update()
+
 
 
         # info_bar = Info_bar(screen)
