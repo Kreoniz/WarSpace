@@ -57,32 +57,14 @@ class TowerBaseTile(Tile):
                 rect = pygame.Rect(point, (50, 50))
                 if rect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
                     turrets.append(Tower(tower_types[coords[point]][1], tower_types[coords[point]][2], tower_types[coords[point]][3], pos[0] + tower_types[coords[point]][4], pos[1] + tower_types[coords[point]][5], tower_types.keys(), repeat=tower_types[coords[point]][7]))
-                    print(coords[point])
+                    vacant_bases.pop(self.pos)
+                    self.tower_selection_open = False
 
 
         if self.pos in vacant_bases:
             self.tower_build_select()
         elif self.pos not in vacant_bases:
             self.tower_options_select()
-
-
-# class Item(pygame.sprite.Sprite):
-#     def __init__(self, image):
-#         super().__init__(items_group, all_sprites)
-#         self.image = image
-#         self.rect = self.image.get_rect().move(-160, -160)
-#
-#     def update(self):
-#         if pygame.mouse.get_pressed()[0] and self.rect.collidepoint(pygame.mouse.get_pos()):
-#             pos = self.rect.x, self.rect.y
-#             print(pos)
-#             turrets.append(Tower(load_image("game_assets/Towers/blue_turret_file.png"), 1, 9, pos[0] - 7, pos[1] - 10, repeat=True))
-#
-#     def show(self, pos_x, pos_y):
-#         self.rect = self.image.get_rect().move(pos_x, pos_y)
-#
-#     def hide(self):
-#         self.rect = self.image.get_rect().move(-160, -160)
 
 
 # class Info_bar:
@@ -153,7 +135,6 @@ def generate_level(level):
                 Tile('road', x, y)
             elif level[y][x] == '3':
                 vacant_bases[(x, y)] = (TowerBaseTile('tower_base', x, y))
-    # [Item(tower_selection_images[item]) for item in tower_selection_images]
     return None
 
 
@@ -176,7 +157,9 @@ tower_selection_images = {0: load_image('game_assets/Towers/blue_turret_select.p
                           # 4: load_image('game_assets/items/semitransparent_circle.png')
                           }
 tower_types = {0: ["blue_turret", load_image("game_assets/Towers/blue_turret_file.png"), 1, 9, -7, -10, 0, True],
-               1: "something"
+               1: ["blue_turret", load_image("game_assets/Towers/rhombus_turret_file.png"), 1, 9, -7, -10, 0, True],
+               2: ["blue_turret", load_image("game_assets/Towers/blue_turret_file.png"), 1, 9, -7, -10, 0, True],
+               3: ["blue_turret", load_image("game_assets/Towers/blue_turret_file.png"), 1, 9, -7, -10, 0, True]
                }
 
 cursor_select = load_image("game_assets/cursor/cursor_select.png")
