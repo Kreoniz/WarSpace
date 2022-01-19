@@ -109,6 +109,57 @@ class Tower(pygame.sprite.Sprite):
         self.image = self.frames[self.cur_frame]
 
 
+class Enemy(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__(all_sprites, enemy_group)
+        self.width = 50
+        self.height = 50
+        self.path = [(-30, 150), (200, 150), (200, 400), (350, 400), (350, 150), (600, 150), (600, 400), (750, 400), (750, 150), (10000, 150)]
+        self.speeds = [(1, 0), (1, 0), (0, 1), (1, 0), (0, -1), (1, 0), (0, 1), (1, 0), (0, -1), (1, 0)]
+        self.path_counter = 1
+        self.speed_counter = 1
+        self.cur_path = self.path[self.path_counter]
+
+    def update(self):
+        self.move()
+        self.isEnemyAwayScreen()
+        self.draw_health_bar()
+
+    def isEnemyAwayScreen(self):
+        if self.rect.x > 1000:
+            print('Lose')
+
+    def move(self):
+        if self.rect.x >= self.path[self.path_counter][0] and self.rect.y >= self.path[self.path_counter][1]:
+            self.path_counter += 1
+            self.speed_counter += 1
+            self.cur_path = self.path[self.path_counter]
+        self.rect = self.rect.move(self.speeds[self.speed_counter][0], self.speeds[self.speed_counter][1])
+
+    def draw_health_bar(self):
+        pygame.draw.rect(screen, 'green', (self.rect.x - 1, self.rect.y - self.hit_bar_settings, 50, 10), 1)
+
+
+class Ghost(Enemy):
+    def __init__(self):
+        super().__init__()
+        self.image = load_image(f'game_assets/enemies/ghost.png')
+        self.rect = self.image.get_rect().move(self.path[0][0], self.path[0][1])
+        self.health = 1
+        self.hit_bar_settings = 5
+        #  self.enemy_speed = 1
+
+
+class BigGhost(Enemy):
+    def __init__(self):
+        super().__init__()
+        self.image = load_image(f'game_assets/enemies/big_ghost.png')
+        self.rect = self.image.get_rect().move(self.path[0][0], self.path[0][1])
+        self.health = 2
+        self.hit_bar_settings = 10
+        #  self.enemy_speed = 1
+
+
 # game initialization --------------------------------------------------------------------------------------------------
 pygame.init()
 screen = pygame.display.set_mode((1000, 600))
@@ -174,6 +225,7 @@ all_sprites = pygame.sprite.Group()
 tiles_group = pygame.sprite.Group()
 tower_group = pygame.sprite.Group()
 items_group = pygame.sprite.Group()
+enemy_group = pygame.sprite.Group()
 
 # main loop ------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
@@ -189,7 +241,10 @@ if __name__ == '__main__':
             if event.type == pygame.QUIT:
                 running = False
             if event.type == pygame.MOUSEBUTTONDOWN:
-                pass
+                enemy = Ghost()
+                #x, y = event.pos
+                #temp.append([x, y])
+                #print(event.pos)
                 # print(occupied_bases)
                 # print(vacant_bases)
 
@@ -198,6 +253,7 @@ if __name__ == '__main__':
         tower_group.update()
         items_group.update()
         tiles_group.update()
+        enemy_group.update()
 
         # info_bar = Info_bar(screen)
         if pygame.mouse.get_focused():
@@ -210,7 +266,7 @@ if __name__ == '__main__':
         render(screen, fonts[0], text=current_fps, color=(255, 255, 255), pos=(0, 0))
 
         pygame.display.flip()
-        clock.tick(20)
+        clock.tick(50)
         # print(clock.get_fps())
 
     pygame.quit()
