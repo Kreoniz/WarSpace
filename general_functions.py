@@ -16,6 +16,7 @@ def load_image(name, colorkey=None):
         print(f"Файл с изображением '{name}' не найден")
         sys.exit()
 
+
 def create_fonts(font_sizes_list):
     # Creates different fonts with one list
     fonts = []
@@ -23,3 +24,7 @@ def create_fonts(font_sizes_list):
         fonts.append(
             pygame.font.SysFont("Arial", size))
     return fonts
+
+
+def distance_between_two_points(p1, p2):
+    return ((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2) ** (1/2)

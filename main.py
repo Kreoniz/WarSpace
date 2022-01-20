@@ -6,7 +6,7 @@ import random as rd
 from pprint import pprint
 
 # importing other stuff ------------------------------------------------------------------------------------------------
-from general_functions import load_image, create_fonts
+from general_functions import load_image, create_fonts, distance_between_two_points
 
 menu_height = 0
 vacant_bases = {}
@@ -58,26 +58,27 @@ class TowerBaseTile(Tile):
                       (pos[0], pos[1] + 60): 1,
                       (pos[0] - 60, pos[1]): 2,
                       (pos[0], pos[1] - 60): 3,
-                      # [pos[0] - 100, pos[1] - 100]
                       }
             for pic in tower_selection_images:
                 screen.blit(tower_selection_images[pic], (list(coords.keys())[pic]))
             for point in coords:
                 rect = pygame.Rect(point, (50, 50))
                 if rect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
+                    characteristics = tower_types[coords[point]]
                     turrets[self.pos] = (Tower(tower_types[coords[point]][1], tower_types[coords[point]][2],
                                                tower_types[coords[point]][3], pos[0] + tower_types[coords[point]][4],
                                                pos[1] + tower_types[coords[point]][5], tower_types.keys(),
-                                               tower_types[coords[point]][7]))
+                                               tower_types[coords[point]][7], tower_types[coords[point]][8]))
                     vacant_bases.pop(self.pos)
                     self.tower_selection_open = False
 
         elif self.range_shown:
             radius = self.tower_type().range
-            tower_range = pygame.Surface((radius * 2, radius * 2), pygame.SRCALPHA, 32)
-            pygame.draw.circle(tower_range, (255, 0, 0, 100), (radius, radius), radius)
             pos = get_pos(self.pos)
-            screen.blit(tower_range, (pos[0] - 3 * radius / 4, pos[1] - 3 * radius / 4))
+            tower_range = pygame.Surface(screen.get_size(), pygame.SRCALPHA, 32)
+            pygame.draw.circle(tower_range, (255, 0, 0, 100), (pos[0] + tile_height / 2, pos[1] + tile_height / 2),
+                               radius)
+            screen.blit(tower_range, (0, 0))
 
         if self.pos in vacant_bases:
             self.tower_build_select()
@@ -91,7 +92,7 @@ class TowerBaseTile(Tile):
 #         screen.blit(self.image, (0, 0))
 
 class Tower(pygame.sprite.Sprite):
-    def __init__(self, sheet, columns, rows, x, y, type=0, repeat=False):
+    def __init__(self, sheet, columns, rows, x, y, type=0, repeat=False, range=100):
         super().__init__(all_sprites, tower_group)
         self.frames = []
         self.flipped_frames = []
@@ -101,7 +102,7 @@ class Tower(pygame.sprite.Sprite):
         self.image = self.frames[self.cur_frame]
         self.rect = self.rect.move(x, y)
         self.type = type
-        self.range = 100
+        self.range = range
 
     def cut_sheet(self, sheet, columns, rows):
         self.rect = pygame.Rect(0, 0, sheet.get_width() // columns, sheet.get_height() // rows)
@@ -120,15 +121,24 @@ class Tower(pygame.sprite.Sprite):
                 self.frames.append(self.flipped_frames[i])
         del self.flipped_frames
 
+    def enemy_detection(self):
+        for enemy in enemies:
+            points = (enemy.rect[0], enemy.rect[1]), (enemy.rect[0] + enemy.rect[2], enemy.rect[1]), (
+                enemy.rect[0] + enemy.rect[2], enemy.rect[1] + enemy.rect[3]), (
+                         enemy.rect[0], enemy.rect[1] + enemy.rect[3])
+            for point in points:
+                if distance_between_two_points(point, (
+                self.rect.x + tile_width / 2, self.rect.y + tile_height / 2)) <= self.range:
+                    return True
+        return False
+
     def rotation(self):
         self.cur_frame = (self.cur_frame + 1) % len(self.frames)
         self.image = self.frames[self.cur_frame]
 
     def update(self):
-        if enemies:
+        if self.enemy_detection():
             self.rotation()
-        else:
-            self.image = self.frames[8]
 
 
 class Enemy(pygame.sprite.Sprite):
@@ -151,7 +161,6 @@ class Enemy(pygame.sprite.Sprite):
         self.move()
         self.isEnemyAwayScreen()
         self.draw_health_bar()
-        print(self.rect.x, self.rect.y)
 
     def isEnemyAwayScreen(self):
         if self.rect.x > 1000:
@@ -235,10 +244,10 @@ tower_selection_images = {0: load_image('game_assets/Towers/blue_turret_select.p
                           3: load_image('game_assets/items/test.png'),
                           # 4: load_image('game_assets/items/semitransparent_circle.png')
                           }
-tower_types = {0: ["blue_turret", load_image("game_assets/Towers/blue_turret_file.png"), 1, 9, -7, -10, 0, True],
-               1: ["blue_turret", load_image("game_assets/Towers/rhombus_turret_file.png"), 1, 9, 0, 0, 0, True],
-               2: ["blue_turret", load_image("game_assets/Towers/blue_turret_file.png"), 1, 9, -7, -10, 0, True],
-               3: ["blue_turret", load_image("game_assets/Towers/blue_turret_file.png"), 1, 9, -7, -10, 0, True]
+tower_types = {0: ["blue_turret", load_image("game_assets/Towers/blue_turret_file.png"), 1, 9, -7, -10, 0, True, 100],
+               1: ["blue_turret", load_image("game_assets/Towers/rhombus_turret_file.png"), 1, 9, 0, 0, 0, True, 75],
+               2: ["blue_turret", load_image("game_assets/Towers/blue_turret_file.png"), 1, 9, -7, -10, 0, True, 200],
+               3: ["blue_turret", load_image("game_assets/Towers/blue_turret_file.png"), 1, 9, -7, -10, 0, True, 50]
                }
 
 cursor_select = load_image("game_assets/cursor/cursor_select.png")
@@ -274,10 +283,6 @@ if __name__ == '__main__':
         enemy_group.update()
         tower_group.draw(screen)
         tower_group.update()
-
-        # range = pygame.Surface((1000, 1000), pygame.SRCALPHA, 32)
-        # pygame.draw.circle(range, (0, 0, 0, 100), (0, 0), 50)
-        # screen.blit(range, (110, 110))
 
         # info_bar = Info_bar(screen)
         if pygame.mouse.get_focused():
