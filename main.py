@@ -136,33 +136,47 @@ class Enemy(pygame.sprite.Sprite):
         super().__init__(all_sprites, enemy_group)
         self.width = 50
         self.height = 50
-        # path = [(0, 3), (4, 3), (4, 8), (7, 8), (7, 3), (12, 3), (12, 8), (15, 8), (15, 3), (20, 3)]
-        # self.path = []
-        # for point in path:
-        #     self.path.append(get_pos(point))
-        self.path = [(-30, 150), (200, 150), (200, 400), (350, 400), (350, 150), (600, 150), (600, 400), (750, 400),
-                     (750, 150), (10000, 150)]
-        self.speeds = [(1, 0), (1, 0), (0, 1), (1, 0), (0, -1), (1, 0), (0, 1), (1, 0), (0, -1), (1, 0)]
-        self.path_counter = 1
+        self.path = path
+        self.speeds = [1, 0]
+        self.path_counter = 0
         self.speed_counter = 1
         self.cur_path = self.path[self.path_counter]
+        print(self.path)
 
     def update(self):
         self.move()
         self.isEnemyAwayScreen()
         self.draw_health_bar()
-        print(self.rect.x, self.rect.y)
+        # print(self.rect.x, self.rect.y)
 
     def isEnemyAwayScreen(self):
         if self.rect.x > 1000:
             print('Lose')
 
     def move(self):
-        if self.rect.x >= self.path[self.path_counter][0] and self.rect.y >= self.path[self.path_counter][1]:
-            self.path_counter += 1
-            self.speed_counter += 1
-            self.cur_path = self.path[self.path_counter]
-        self.rect = self.rect.move(self.speeds[self.speed_counter][0], self.speeds[self.speed_counter][1])
+        if self.rect.x < size[0]:
+            if self.rect.x == self.cur_path[0] and self.rect.y == self.cur_path[1]:
+                self.findingCorrectSpeed()
+                self.path_counter += 1
+                self.cur_path = self.path[self.path_counter]
+            self.rect = self.rect.move(self.speeds[0], self.speeds[1])
+
+    def findingCorrectSpeed(self):
+        # x
+        if self.cur_path[0] < self.path[self.path_counter + 1][0]:
+            self.speeds[0] = 1
+            self.image = load_image(self.images[0])
+        elif self.cur_path[0] == self.path[self.path_counter + 1][0]:
+            self.speeds[0] = 0
+        # y
+        if self.cur_path[1] > self.path[self.path_counter + 1][1]:
+            self.speeds[1] = -1
+            self.image = load_image(self.images[2])
+        elif self.cur_path[1] < self.path[self.path_counter + 1][1]: #
+            self.speeds[1] = 1
+            self.image = load_image(self.images[1])
+        elif self.cur_path[1] == self.path[self.path_counter + 1][1]: #
+            self.speeds[1] = 0
 
     def draw_health_bar(self):
         pygame.draw.rect(screen, 'green', (self.rect.x - 1, self.rect.y - self.hit_bar_settings, 50, 10), 1)
@@ -171,7 +185,10 @@ class Enemy(pygame.sprite.Sprite):
 class Ghost(Enemy):
     def __init__(self):
         super().__init__()
-        self.image = load_image(f'game_assets/enemies/ghost.png')
+        self.images = ['game_assets/enemies/ghost_right.png',
+                       'game_assets/enemies/ghost_down.png',
+                       'game_assets/enemies/ghost_up.png']
+        self.image = load_image(self.images[0])
         self.rect = self.image.get_rect().move(self.path[0][0], self.path[0][1])
         self.health = 1
         self.hit_bar_settings = 5
@@ -181,7 +198,7 @@ class Ghost(Enemy):
 class BigGhost(Enemy):
     def __init__(self):
         super().__init__()
-        self.image = load_image(f'game_assets/enemies/big_ghost.png')
+        self.image = load_image('game_assets/enemies/big_ghost.png')
         self.rect = self.image.get_rect().move(self.path[0][0], self.path[0][1])
         self.health = 2
         self.hit_bar_settings = 10
@@ -205,16 +222,53 @@ def get_pos(pos):
 
 
 def generate_level(level):
-    new_player, x, y = None, None, None
+    counter = 0
     for y in range(len(level)):
+        row = []
         for x in range(len(level[y])):
             if level[y][x] == '1':
                 Tile('grass', x, y)
+                row.append(1)
             elif level[y][x] == '2':
                 Tile('road', x, y)
+                row.append(2)
+                counter += 1
             elif level[y][x] == '3':
                 vacant_bases[(x, y)] = (TowerBaseTile('tower_base', x, y))
-    return None
+                row.append(3)
+        map.append(row)
+    return counter
+
+
+def generate_path(road_tiles_count):
+    # finding first road tile
+    path = []
+    for num, row in enumerate(map):
+        if row[0] == 2:
+            last_cord = [num, 0]
+            path.append((0, num * tile_size))
+    temp_cords = []
+    for i in range(road_tiles_count - 1):
+        if map[last_cord[0] + 1][last_cord[1]] == 2 and [last_cord[0] + 1, last_cord[1]] not in temp_cords:
+            last_cord = [last_cord[0] + 1, last_cord[1]]
+            path.append((last_cord[1] * tile_size, (last_cord[0] + 1) * tile_size - 50))
+            temp_cords.append(last_cord)
+        elif map[last_cord[0] - 1][last_cord[1]] == 2 and [last_cord[0] - 1, last_cord[1]] not in temp_cords:
+            last_cord = [last_cord[0] - 1, last_cord[1]]
+            path.append((last_cord[1] * tile_size, (last_cord[0] - 1) * tile_size + 50))
+            temp_cords.append(last_cord)
+        elif map[last_cord[0]][last_cord[1] + 1] == 2 and [last_cord[0], last_cord[1] + 1] not in temp_cords:
+            last_cord = [last_cord[0], last_cord[1] + 1]
+            path.append(((last_cord[1] + 1) * tile_size - 50, last_cord[0] * tile_size))
+            temp_cords.append(last_cord)
+        elif map[last_cord[0]][last_cord[1] - 1] == 2 and [last_cord[0], last_cord[1] - 1] not in temp_cords:
+            last_cord = [last_cord[0], last_cord[1] - 1]
+            path.append(((last_cord[1] - 1) * tile_size, last_cord[0] * tile_size))
+            temp_cords.append(last_cord)
+    path.append(((last_cord[1] + 1) * tile_size, last_cord[0] * tile_size))
+    path.append(((last_cord[1] + 1) * tile_size, last_cord[0] * tile_size))
+    return list(dict.fromkeys(path))
+
 
 
 def load_level(filename):
@@ -247,7 +301,9 @@ cursor = load_image("game_assets/cursor/cursor.png")
 font_sizes_list = [40, 30, 20, 10]
 fonts = create_fonts(font_sizes_list)
 
-tile_width = tile_height = 50
+map = []
+
+tile_size = tile_width = tile_height = 50
 # all sprite groups ----------------------------------------------------------------------------------------------------
 all_sprites = pygame.sprite.Group()
 tiles_group = pygame.sprite.Group()
@@ -258,7 +314,8 @@ enemy_group = pygame.sprite.Group()
 if __name__ == '__main__':
     running = True
     pygame.mouse.set_visible(False)
-    generate_level(load_level('map.txt'))
+    road_tiles_count = generate_level(load_level('map.txt'))
+    path = generate_path(road_tiles_count)
     clock = pygame.time.Clock()
 
     while running:
@@ -275,9 +332,8 @@ if __name__ == '__main__':
         tower_group.draw(screen)
         tower_group.update()
 
-        # range = pygame.Surface((1000, 1000), pygame.SRCALPHA, 32)
-        # pygame.draw.circle(range, (0, 0, 0, 100), (0, 0), 50)
-        # screen.blit(range, (110, 110))
+        for item in path:
+            pygame.draw.circle(screen, ('white'), (item[0], item[1]), 10)
 
         # info_bar = Info_bar(screen)
         if pygame.mouse.get_focused():
