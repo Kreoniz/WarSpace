@@ -77,7 +77,7 @@ class TowerBaseTile(Tile):
             radius = self.tower_type().range
             pos = get_pos(self.pos)
             tower_range = pygame.Surface(screen.get_size(), pygame.SRCALPHA, 32)
-            pygame.draw.circle(tower_range, (255, 0, 0, 100), (pos[0] + tile_height / 2, pos[1] + tile_height / 2),
+            pygame.draw.circle(tower_range, (255, 0, 0, 75), (pos[0] + tile_height / 2, pos[1] + tile_height / 2),
                                radius)
             screen.blit(tower_range, (0, 0))
 
@@ -118,11 +118,22 @@ class Tower(pygame.sprite.Sprite):
                     self.flipped_frames.append(
                         pygame.transform.flip(sheet.subsurface(pygame.Rect(frame_location, self.rect.size)), True,
                                               False))
-            for i in range(len(self.flipped_frames) - 1, 0, -1):
+            for i in range(len(self.flipped_frames) - 2, 0, -1):
                 print(i)
                 self.frames.append(self.flipped_frames[i])
         print(len(self.frames))
         del self.flipped_frames
+
+    def draw_line(self, enemy):
+        if enemy:
+            pygame.draw.circle(screen, (255, 0, 0),
+                               (enemy.rect.x + enemy.rect.width / 2, enemy.rect.y + enemy.rect.height / 2), 5)
+            pygame.draw.circle(screen, (255, 0, 0),
+                               (self.rect.x + self.rect.width / 2, self.rect.y + self.rect.height / 2),
+                               5)
+            pygame.draw.line(screen, (255, 0, 0),
+                             (enemy.rect.x + enemy.rect.width / 2, enemy.rect.y + enemy.rect.height / 2),
+                             (self.rect.x + self.rect.width / 2, self.rect.y + self.rect.height / 2), 2)
 
     def enemy_detection(self):
         for enemy in enemies:
@@ -137,20 +148,21 @@ class Tower(pygame.sprite.Sprite):
 
     def rotation(self, enemy):
         angle = 22.5
-        # print(enemy.rect, angle)
-        # print(enemy.rect.x + enemy.rect.width / 2, enemy.rect.y + enemy.rect.height / 2)
-        # print(angle_between_two_points((self.rect.x + self.rect.width / 2, self.rect.y + self.rect.height / 2),
-        #                                (enemy.rect.x + enemy.rect.width / 2, enemy.rect.y + enemy.rect.height / 2)))
         angle_between_enemy_and_tower = angle_between_two_points(
             (self.rect.x + self.rect.width / 2, self.rect.y + self.rect.height / 2),
             (enemy.rect.x + enemy.rect.width / 2, enemy.rect.y + enemy.rect.height / 2))
-        print(angle_between_enemy_and_tower, angle_between_enemy_and_tower[1] // 17)
-        self.cur_frame = (self.cur_frame + 1) % len(self.frames)
-        self.image = self.frames[int(abs(angle_between_enemy_and_tower[1] // 17))]
+
+        if angle_between_enemy_and_tower[1] < 90:
+            self.cur_frame = int(abs((angle_between_enemy_and_tower[1] - 90) // angle))
+        else:
+            self.cur_frame = -int(abs((angle_between_enemy_and_tower[1] - 90) // angle))
+        self.image = self.frames[self.cur_frame]
 
     def update(self):
         if self.enemy_detection():
             self.rotation(self.enemy_detection())
+
+        self.draw_line(self.enemy_detection())
 
 
 class Enemy(pygame.sprite.Sprite):
@@ -305,13 +317,13 @@ tile_images = {'road': load_image('game_assets/Textures/stone.png'),
                'tower_base': load_image('game_assets/Textures/tower_base.png')
                }
 tower_selection_images = {0: load_image('game_assets/Towers/blue_turret_select.png'),
-                          1: load_image('game_assets/items/test.png'),
+                          1: load_image('game_assets/Towers/red_turret_select.png'),
                           2: load_image('game_assets/items/test.png'),
                           3: load_image('game_assets/items/test.png'),
                           # 4: load_image('game_assets/items/semitransparent_circle.png')
                           }
 tower_types = {0: ["blue_turret", load_image("game_assets/Towers/blue_turret_file.png"), 1, 9, -7, -10, 0, True, 100],
-               1: ["blue_turret", load_image("game_assets/Towers/rhombus_turret_file.png"), 1, 9, 0, 0, 0, True, 75],
+               1: ["blue_turret", load_image("game_assets/Towers/red_turret_file.png"), 1, 9, -7, -10, 0, True, 75],
                2: ["blue_turret", load_image("game_assets/Towers/blue_turret_file.png"), 1, 9, -7, -10, 0, True, 200],
                3: ["blue_turret", load_image("game_assets/Towers/blue_turret_file.png"), 1, 9, -7, -10, 0, True, 50]
                }
