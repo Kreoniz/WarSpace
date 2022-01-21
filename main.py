@@ -118,8 +118,10 @@ class Tower(pygame.sprite.Sprite):
                     self.flipped_frames.append(
                         pygame.transform.flip(sheet.subsurface(pygame.Rect(frame_location, self.rect.size)), True,
                                               False))
-            for i in range(len(self.flipped_frames) - 2, 0, -1):
+            for i in range(len(self.flipped_frames) - 1, 0, -1):
+                print(i)
                 self.frames.append(self.flipped_frames[i])
+        print(len(self.frames))
         del self.flipped_frames
 
     def enemy_detection(self):
@@ -130,15 +132,21 @@ class Tower(pygame.sprite.Sprite):
             for point in points:
                 if distance_between_two_points(point, (
                         self.rect.x + tile_width / 2, self.rect.y + tile_height / 2)) <= self.range:
-                    print(angle_between_two_points(point, (self.rect.x + tile_width / 2, self.rect.y + tile_height / 2)))
                     return enemy
         return False
 
     def rotation(self, enemy):
-        angle = radians(22.5)
-        print(enemy.rect, angle)
+        angle = 22.5
+        # print(enemy.rect, angle)
+        # print(enemy.rect.x + enemy.rect.width / 2, enemy.rect.y + enemy.rect.height / 2)
+        # print(angle_between_two_points((self.rect.x + self.rect.width / 2, self.rect.y + self.rect.height / 2),
+        #                                (enemy.rect.x + enemy.rect.width / 2, enemy.rect.y + enemy.rect.height / 2)))
+        angle_between_enemy_and_tower = angle_between_two_points(
+            (self.rect.x + self.rect.width / 2, self.rect.y + self.rect.height / 2),
+            (enemy.rect.x + enemy.rect.width / 2, enemy.rect.y + enemy.rect.height / 2))
+        print(angle_between_enemy_and_tower, angle_between_enemy_and_tower[1] // 17)
         self.cur_frame = (self.cur_frame + 1) % len(self.frames)
-        self.image = self.frames[self.cur_frame]
+        self.image = self.frames[int(abs(angle_between_enemy_and_tower[1] // 17))]
 
     def update(self):
         if self.enemy_detection():

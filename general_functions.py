@@ -36,7 +36,7 @@ def angle_between_two_points(p1, p2):
 
     rads = atan2(dy, dx)
     degs = degrees(rads)
-    if degs < 0:
-        degs += 90
+    # if degs < 0:
+    #     degs += 90
 
     return rads, degs
