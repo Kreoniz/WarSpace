@@ -81,6 +81,7 @@ class TowerBaseTile(Tile):
                                radius)
             screen.blit(tower_range, (0, 0))
 
+
         if self.pos in vacant_bases:
             self.tower_build_select()
         elif self.pos not in vacant_bases:
@@ -105,6 +106,7 @@ class Tower(pygame.sprite.Sprite):
         self.type = type
         self.range = range
 
+
     def cut_sheet(self, sheet, columns, rows):
         self.rect = pygame.Rect(0, 0, sheet.get_width() // columns, sheet.get_height() // rows)
         for j in range(rows):
@@ -119,21 +121,19 @@ class Tower(pygame.sprite.Sprite):
                         pygame.transform.flip(sheet.subsurface(pygame.Rect(frame_location, self.rect.size)), True,
                                               False))
             for i in range(len(self.flipped_frames) - 2, 0, -1):
-                print(i)
                 self.frames.append(self.flipped_frames[i])
-        print(len(self.frames))
         del self.flipped_frames
 
-    def draw_line(self, enemy):
-        if enemy:
-            pygame.draw.circle(screen, (255, 0, 0),
-                               (enemy.rect.x + enemy.rect.width / 2, enemy.rect.y + enemy.rect.height / 2), 5)
-            pygame.draw.circle(screen, (255, 0, 0),
-                               (self.rect.x + self.rect.width / 2, self.rect.y + self.rect.height / 2),
-                               5)
-            pygame.draw.line(screen, (255, 0, 0),
-                             (enemy.rect.x + enemy.rect.width / 2, enemy.rect.y + enemy.rect.height / 2),
-                             (self.rect.x + self.rect.width / 2, self.rect.y + self.rect.height / 2), 2)
+    # def draw_line(self, enemy):
+    #     if enemy:
+    #         pygame.draw.circle(screen, (255, 0, 0),
+    #                            (enemy.rect.x + enemy.rect.width / 2, enemy.rect.y + enemy.rect.height / 2), 5)
+    #         pygame.draw.circle(screen, (255, 0, 0),
+    #                            (self.rect.x + self.rect.width / 2, self.rect.y + self.rect.height / 2),
+    #                            5)
+    #         pygame.draw.line(screen, (255, 0, 0),
+    #                          (enemy.rect.x + enemy.rect.width / 2, enemy.rect.y + enemy.rect.height / 2),
+    #                          (self.rect.x + self.rect.width / 2, self.rect.y + self.rect.height / 2), 2)
 
     def enemy_detection(self):
         for enemy in enemies:
@@ -162,7 +162,7 @@ class Tower(pygame.sprite.Sprite):
         if self.enemy_detection():
             self.rotation(self.enemy_detection())
 
-        self.draw_line(self.enemy_detection())
+        # self.draw_line(self.enemy_detection())
 
 
 class Enemy(pygame.sprite.Sprite):
@@ -314,13 +314,12 @@ def load_level(filename):
 # files + other stuff --------------------------------------------------------------------------------------------------
 tile_images = {'road': load_image('game_assets/Textures/stone.png'),
                'grass': load_image('game_assets/Textures/grass.png'),
-               'tower_base': load_image('game_assets/Textures/tower_base.png')
+               'tower_base': load_image('game_assets/Textures/tower_base.png'),
                }
 tower_selection_images = {0: load_image('game_assets/Towers/blue_turret_select.png'),
                           1: load_image('game_assets/Towers/red_turret_select.png'),
                           2: load_image('game_assets/items/test.png'),
                           3: load_image('game_assets/items/test.png'),
-                          # 4: load_image('game_assets/items/semitransparent_circle.png')
                           }
 tower_types = {0: ["blue_turret", load_image("game_assets/Towers/blue_turret_file.png"), 1, 9, -7, -10, 0, True, 100],
                1: ["blue_turret", load_image("game_assets/Towers/red_turret_file.png"), 1, 9, -7, -10, 0, True, 75],
