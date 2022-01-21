@@ -124,16 +124,16 @@ class Tower(pygame.sprite.Sprite):
                 self.frames.append(self.flipped_frames[i])
         del self.flipped_frames
 
-    # def draw_line(self, enemy):
-    #     if enemy:
-    #         pygame.draw.circle(screen, (255, 0, 0),
-    #                            (enemy.rect.x + enemy.rect.width / 2, enemy.rect.y + enemy.rect.height / 2), 5)
-    #         pygame.draw.circle(screen, (255, 0, 0),
-    #                            (self.rect.x + self.rect.width / 2, self.rect.y + self.rect.height / 2),
-    #                            5)
-    #         pygame.draw.line(screen, (255, 0, 0),
-    #                          (enemy.rect.x + enemy.rect.width / 2, enemy.rect.y + enemy.rect.height / 2),
-    #                          (self.rect.x + self.rect.width / 2, self.rect.y + self.rect.height / 2), 2)
+    def draw_line(self, enemy):
+         if enemy:
+             pygame.draw.circle(screen, (255, 0, 0),
+                               (enemy.rect.x + enemy.rect.width / 2, enemy.rect.y + enemy.rect.height / 2), 5)
+             pygame.draw.circle(screen, (255, 0, 0),
+                               (self.rect.x + self.rect.width / 2, self.rect.y + self.rect.height / 2),
+                                5)
+             pygame.draw.line(screen, (255, 0, 0),
+                             (enemy.rect.x + enemy.rect.width / 2, enemy.rect.y + enemy.rect.height / 2),
+                             (self.rect.x + self.rect.width / 2, self.rect.y + self.rect.height / 2), 2)
 
     def enemy_detection(self):
         for enemy in enemies:
@@ -161,8 +161,12 @@ class Tower(pygame.sprite.Sprite):
     def update(self):
         if self.enemy_detection():
             self.rotation(self.enemy_detection())
-
-        # self.draw_line(self.enemy_detection())
+            for tile in tiles_group:
+                try:
+                    if tile.range_shown and self.rect.collidepoint((tile.rect.x, tile.rect.y)):
+                        self.draw_line(self.enemy_detection())
+                except:
+                    pass
 
 
 class Enemy(pygame.sprite.Sprite):
@@ -364,8 +368,8 @@ if __name__ == '__main__':
         tower_group.draw(screen)
         tower_group.update()
 
-        for item in path:
-            pygame.draw.circle(screen, ('white'), (item[0], item[1]), 10)
+        # for item in path:
+            # pygame.draw.circle(screen, ('white'), (item[0], item[1]), 10)
 
         # info_bar = Info_bar(screen)
         if pygame.mouse.get_focused():
