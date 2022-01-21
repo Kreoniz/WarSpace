@@ -1,4 +1,5 @@
 import pygame
+from math import degrees, atan2
 
 
 def load_image(name, colorkey=None):
@@ -28,3 +29,14 @@ def create_fonts(font_sizes_list):
 
 def distance_between_two_points(p1, p2):
     return ((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2) ** (1/2)
+
+def angle_between_two_points(p1, p2):
+    dy = p1[1] - p2[1]
+    dx = p2[0] - p1[0]
+
+    rads = atan2(dy, dx)
+    degs = degrees(rads)
+    if degs < 0:
+        degs += 90
+
+    return rads, degs

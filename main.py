@@ -1,12 +1,12 @@
 import sys
 import os
 import pygame
-import math
+from math import radians, degrees, sin, cos, tan, atan2
 import random as rd
 from pprint import pprint
 
 # importing other stuff ------------------------------------------------------------------------------------------------
-from general_functions import load_image, create_fonts, distance_between_two_points
+from general_functions import load_image, create_fonts, distance_between_two_points, angle_between_two_points
 
 menu_height = 0
 vacant_bases = {}
@@ -129,17 +129,20 @@ class Tower(pygame.sprite.Sprite):
                          enemy.rect[0], enemy.rect[1] + enemy.rect[3])
             for point in points:
                 if distance_between_two_points(point, (
-                self.rect.x + tile_width / 2, self.rect.y + tile_height / 2)) <= self.range:
-                    return True
+                        self.rect.x + tile_width / 2, self.rect.y + tile_height / 2)) <= self.range:
+                    print(angle_between_two_points(point, (self.rect.x + tile_width / 2, self.rect.y + tile_height / 2)))
+                    return enemy
         return False
 
-    def rotation(self):
+    def rotation(self, enemy):
+        angle = radians(22.5)
+        print(enemy.rect, angle)
         self.cur_frame = (self.cur_frame + 1) % len(self.frames)
         self.image = self.frames[self.cur_frame]
 
     def update(self):
         if self.enemy_detection():
-            self.rotation()
+            self.rotation(self.enemy_detection())
 
 
 class Enemy(pygame.sprite.Sprite):
@@ -183,10 +186,10 @@ class Enemy(pygame.sprite.Sprite):
         if self.cur_path[1] > self.path[self.path_counter + 1][1]:
             self.speeds[1] = -1
             self.image = load_image(self.images[2])
-        elif self.cur_path[1] < self.path[self.path_counter + 1][1]: #
+        elif self.cur_path[1] < self.path[self.path_counter + 1][1]:  #
             self.speeds[1] = 1
             self.image = load_image(self.images[1])
-        elif self.cur_path[1] == self.path[self.path_counter + 1][1]: #
+        elif self.cur_path[1] == self.path[self.path_counter + 1][1]:  #
             self.speeds[1] = 0
 
     def draw_health_bar(self):
@@ -279,7 +282,6 @@ def generate_path(road_tiles_count):
     path.append(((last_cord[1] + 1) * tile_size, last_cord[0] * tile_size))
     path.append(((last_cord[1] + 1) * tile_size, last_cord[0] * tile_size))
     return list(dict.fromkeys(path))
-
 
 
 def load_level(filename):
